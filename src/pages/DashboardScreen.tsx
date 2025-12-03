@@ -11,6 +11,7 @@ import axios from "axios";
 
 export default function DashboardScreen() {
   const navigate = useNavigate();
+  
   const { toast } = useToast();
   const [protectedData, setProtectedData] = useState("");
   const [error, setError] = useState("");
