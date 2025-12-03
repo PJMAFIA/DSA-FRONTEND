@@ -1,6 +1,7 @@
-import { Plus, MessageSquare, Trash2 } from "lucide-react";
+import { Plus, MessageSquare, Trash2, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState } from "react";
 
 interface Conversation {
   id: string;
@@ -28,9 +29,10 @@ export default function ChatSidebar({
   isOpen,
   onToggle,
 }: ChatSidebarProps) {
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
   return (
     <>
-      {/* Overlay for mobile */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
@@ -38,7 +40,6 @@ export default function ChatSidebar({
         />
       )}
 
-      {/* Sidebar */}
       <div
         className={`${
           isOpen ? "translate-x-0" : "-translate-x-full"
@@ -74,44 +75,63 @@ export default function ChatSidebar({
             ) : (
               conversations.map((conv) => (
                 <div
-  key={conv.id}
-  className={`relative flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200 ${
-    activeConversationId === conv.id
-      ? "bg-accent/80 shadow-sm border border-border"
-      : "hover:bg-accent/40 border border-transparent"
-  }`}
-  onClick={() => onSelectChat(conv.id)}
->
-  {/* Left: Message Info */}
-  <div className="flex-1 min-w-0">
-    <div className="flex items-center gap-2 mb-1">
-      <MessageSquare className="h-4 w-4 text-primary shrink-0" />
-      <h4 className="text-sm font-semibold truncate">{conv.title}</h4>
-    </div>
-    <p className="text-xs text-muted-foreground/90 truncate leading-relaxed mb-1">
-      {conv.lastMessage}
-    </p>
-    <p className="text-xs text-muted-foreground/60">
-      {conv.timestamp.toLocaleDateString([], { month: "short", day: "numeric" })}
-    </p>
-  </div>
+                  key={conv.id}
+                  className={`relative flex items-center justify-between p-3 rounded-xl cursor-pointer group ${
+                    activeConversationId === conv.id
+                      ? "bg-accent/80 shadow-sm border border-border"
+                      : "hover:bg-accent/40 border border-transparent"
+                  }`}
+                  onClick={() => onSelectChat(conv.id)}
+                >
+                  {/* Left: Message Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <MessageSquare className="h-4 w-4 text-primary shrink-0" />
+                      <h4 className="text-sm font-semibold truncate">{conv.title}</h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground/90 truncate leading-relaxed mb-1">
+                      {conv.lastMessage}
+                    </p>
+                    <p className="text-xs text-muted-foreground/60">
+                      {conv.timestamp.toLocaleDateString([], { month: "short", day: "numeric" })}
+                    </p>
+                  </div>
 
-  {/* Right: Delete Button */}
-  <div className="flex-shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-    <Button
-      variant="ghost"
-      size="icon"
-      className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
-      onClick={(e) => {
-        e.stopPropagation();
-        onDeleteChat(conv.id);
-      }}
-    >
-      <Trash2 className="h-4 w-4" />
-    </Button>
-  </div>
-</div>
+                  {/* Right: Hover 3-dots menu */}
+                  <div className="relative flex-shrink-0 ml-2">
+                    {/* 3-dots visible on hover */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                     className="h-8 w-8 opacity-0 group-hover:opacity-100 transition relative z-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(openMenuId === conv.id ? null : conv.id);
+                      }}
+                    >
+                       <MoreVertical className="h-4 w-4" />
+                    </Button>
 
+                    {/* Dropdown menu */}
+                    {openMenuId === conv.id && (
+                      <div className="absolute right-0 top-full mt-1 w-28 bg-card border border-border rounded-md shadow-lg z-50">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full justify-start rounded-none hover:bg-destructive/10 hover:text-destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteChat(conv.id);
+                            setOpenMenuId(null);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               ))
             )}
           </div>
